@@ -1,0 +1,11 @@
+{
+  "name": "workflow",
+  "version": "0.0.1",
+  "description": "A project about a new workflow",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "?.git"
+  },
+  "author": "Johan Voorhout"
+}
