@@ -12,16 +12,33 @@ var gulp = require('gulp'),
 // 	gutil.log('My first gulp workflow');
 // });
 
-var coffeeSources = ['./builds/components/coffee/tagline.coffee'];
-var jsSources = [
+var env,
+	coffeeSources,
+	jsSources,
+	sassSources,
+	htmlSources,
+	jsSources,
+	outputDir;
+
+env = process.env.NODE_ENV || 'development';
+
+if(env === 'development') { 
+	outputDir = './builds/development/';
+} else {
+	outputDir = './builds/production/';
+};
+
+
+coffeeSources = ['./builds/components/coffee/tagline.coffee'];
+jsSources = [
 	'./builds/components/scripts/rclick.js',
 	'./builds/components/scripts/pixgrid.js',
 	'./builds/components/scripts/tagline.js',
 	'./builds/components/scripts/template.js'
 ];
-var sassSources = ['./builds/components/sass/style.scss'];
-var htmlSources = ['./builds/development/*.html'];
-var jsonSources = ['./builds/development/js/*.json'];
+sassSources = ['./builds/components/sass/style.scss'];
+htmlSources = [outputDir + '/*.html'];
+jsonSources = [outputDir + '/js/*.json'];
 
 
 gulp.task('coffee', function() {
@@ -35,7 +52,7 @@ gulp.task('js', function() {
 	gulp.src(jsSources)
 		.pipe(concat('script.js'))
 		.pipe(browserify())
-		.pipe(gulp.dest('./builds/development/js'))
+		.pipe(gulp.dest(outputDir + '/js'))
 		.pipe(connect.reload())
 });
 
@@ -43,8 +60,8 @@ gulp.task('compass', function() {
 	gulp.src(sassSources)
 		.pipe(compass({
 			sass: './builds/components/sass',
-			css: './builds/development/css',
-			image: './builds/development/images',
+			css: outputDir + '/css',
+			image: outputDir + '/images',
 			style: 'expanded',
 			comments: true
 		}))
@@ -52,7 +69,7 @@ gulp.task('compass', function() {
 			console.log(error);
 			this.emit('end');
 		})
-		.pipe(gulp.dest('./builds/development/css'))
+		.pipe(gulp.dest(outputDir + '/css'))
 		.pipe(connect.reload())
 })
 
@@ -68,7 +85,7 @@ gulp.task('watch', function() {
 
 gulp.task('connect', function() {
 	connect.server({
-		root: './builds/development',
+		root: outputDir,
 		livereload: true
 	});
 });
