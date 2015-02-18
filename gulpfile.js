@@ -6,6 +6,7 @@ var gulp = require('gulp'),
 	compass = require('gulp-compass'),	
 	connect = require('gulp-connect'),	
 	gulpif = require('gulp-if'),
+	minifyJSON = require('gulp-jsonminify'),
 	minifyHTML = require('gulp-minify-html'),
 	uglify = require('gulp-uglify'),
 	browserify = require('gulp-browserify'), // Browserify lets you require('modules') in the browser by bundling up all of your dependencies.											
@@ -87,7 +88,7 @@ gulp.task('watch', function() {
 	gulp.watch(jsSources, ['js']);
 	gulp.watch('./builds/components/sass/*.scss', ['compass']);
 	gulp.watch('./builds/development/*.html', ['html']);
-	gulp.watch(jsonSources, ['json']);
+	gulp.watch('./builds/development/*.json', ['json']);
 });
 
 gulp.task('connect', function() {
@@ -105,7 +106,9 @@ gulp.task('html', function() {
 });
 
 gulp.task('json', function() {
-	gulp.src(jsonSources)
+	gulp.src('./builds/development/js/*.json')
+	.pipe(gulpif(env === 'production', minifyJSON()))
+	.pipe(gulpif(env === 'production', gulp.dest('./builds/production/js')))
 	.pipe(connect.reload())
 });
 
