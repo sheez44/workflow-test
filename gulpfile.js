@@ -5,6 +5,9 @@ var gulp = require('gulp'),
 	coffee = require('gulp-coffee'),
 	compass = require('gulp-compass'),	
 	connect = require('gulp-connect'),	
+	gulpif = require('gulp-if'),
+	minifyHTML = require('gulp-minify-html'),
+	uglify = require('gulp-uglify'),
 	browserify = require('gulp-browserify'), // Browserify lets you require('modules') in the browser by bundling up all of your dependencies.											
 	concat = require('gulp-concat');		 // Like importing jQuery, mustache
 
@@ -18,14 +21,17 @@ var env,
 	sassSources,
 	htmlSources,
 	jsSources,
-	outputDir;
+	outputDir,
+	sassStyle;
 
-env = process.env.NODE_ENV || 'development';
+env = process.env.NODE_ENV || 'development';  // in gitbash 'NODE_ENV=production gulp'
 
 if(env === 'development') { 
 	outputDir = './builds/development/';
+	sassStyle = 'expanded';
 } else {
 	outputDir = './builds/production/';
+	sassStyle = 'compressed';
 };
 
 
@@ -52,6 +58,7 @@ gulp.task('js', function() {
 	gulp.src(jsSources)
 		.pipe(concat('script.js'))
 		.pipe(browserify())
+		.pipe(gulpif(env === 'production', uglify())) // If the env variable is set to production then run uglify
 		.pipe(gulp.dest(outputDir + '/js'))
 		.pipe(connect.reload())
 });
@@ -62,7 +69,7 @@ gulp.task('compass', function() {
 			sass: './builds/components/sass',
 			css: outputDir + '/css',
 			image: outputDir + '/images',
-			style: 'expanded',
+			style: sassStyle,
 			comments: true
 		}))
 		.on('error', function(error) {
@@ -79,7 +86,7 @@ gulp.task('watch', function() {
 	gulp.watch(coffeeSources, ['coffee']); // ['coffee'] is the task function
 	gulp.watch(jsSources, ['js']);
 	gulp.watch('./builds/components/sass/*.scss', ['compass']);
-	gulp.watch(htmlSources, ['html']);
+	gulp.watch('./builds/development/*.html', ['html']);
 	gulp.watch(jsonSources, ['json']);
 });
 
@@ -91,7 +98,9 @@ gulp.task('connect', function() {
 });
 
 gulp.task('html', function() {
-	gulp.src(htmlSources)
+	gulp.src('./builds/development/*.html')
+	.pipe(gulpif(env === 'production', minifyHTML()))
+	.pipe(gulpif(env === 'production', gulp.dest(outputDir)))
 	.pipe(connect.reload())
 });
 
